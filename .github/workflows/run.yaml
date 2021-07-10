@@ -3,7 +3,8 @@ name: Run
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron: '00 15 1 * *'
+    - cron: '00 11-13 * * *'
+    - cron: '00 17-19 * * *'
   watch:
     # triggger action when the repo is starred
     types: [ started ]
