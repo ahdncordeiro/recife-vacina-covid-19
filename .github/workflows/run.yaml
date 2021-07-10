@@ -1,0 +1,45 @@
+name: Run
+
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '00 15 1 * *'
+  watch:
+    # triggger action when the repo is starred
+    types: [ started ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "run"
+  run:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'schedule' || github.actor == github.event.repository.owner.login
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 15
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt' # See 'Supported distributions' for available options
+          java-version: '15'
+
+      - name: Clean with Gradle
+        run: ./gradlew clean
+
+      - name: Download selenium web driver for firefox
+        run: curl -L https://github.com/mozilla/geckodriver/releases/download/v0.29.1/geckodriver-v0.29.1-linux64.tar.gz --output geckodriver-v0.29.1-linux64.tar.gz
+
+      - name: Extract selenium web driver for firefox from previous download
+        run: tar -xzf geckodriver-v0.29.1-linux64.tar.gz
+
+      - name: Run with Gradle
+        run: ./gradlew run -Dwebdriver.gecko.driver=geckodriver
+        env:
+          ACM_USERNAME: ${{ secrets.CONECTA_RECIFE_USERNAME }}
+          ACM_PASSWORD: ${{ secrets.CONECTA_RECIFE_PASSWORD }}
