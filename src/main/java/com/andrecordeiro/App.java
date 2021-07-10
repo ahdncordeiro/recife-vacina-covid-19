@@ -22,7 +22,7 @@ public class App {
 
   private static FirefoxDriver getWebDriver() {
     var options = new FirefoxOptions();
-    //    options.setHeadless(true);
+    options.setHeadless(true);
     return new FirefoxDriver(options);
   }
 }

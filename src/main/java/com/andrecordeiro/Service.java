@@ -7,6 +7,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElemen
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class Service {
@@ -16,23 +17,23 @@ public class Service {
   private static final String PASSWORD_FIELD_CSS_SELECTOR = "input[type='password']";
   private static final String SIGN_IN_BUTTON_CSS_SELECTOR = "button[type='submit']";
   public static final String WAIT_MESSAGE =
-      "Assim que sua vez chegar, entraremos em contato para que você possa agendar local, "
-          + "data e hora de sua vacinação. Até lá.";
+      "Você se cadastrou com sucesso. No momento, você "
+          + "não faz parte de nenhum dos grupos prioritários definidos pelo Ministério da Saúde.";
 
-  private String conecta_recife_username;
-  private String conecta_recife_password;
-  private WebDriver driver;
+  private final String conectaRecifeUsername;
+  private final String conectaRecifePassword;
+  private final WebDriver driver;
 
-  public Service(
-      @NotNull String conecta_recife_username,
-      @NotNull String conecta_recife_password,
+  Service(
+      @NotNull String conectaRecifeUsername,
+      @NotNull String conectaRecifePassword,
       @NotNull WebDriver driver) {
-    this.conecta_recife_username = conecta_recife_username;
-    this.conecta_recife_password = conecta_recife_password;
+    this.conectaRecifeUsername = conectaRecifeUsername;
+    this.conectaRecifePassword = conectaRecifePassword;
     this.driver = driver;
   }
 
-  public void process() {
+  void process() {
     goToConectaRecifePage();
     fillUsernameAndPasswordFields();
     signIn();
@@ -50,14 +51,16 @@ public class Service {
   }
 
   private void fillUsernameAndPasswordFields() {
-    driver.findElement(By.id(USERNAME_FIELD_ID)).sendKeys(conecta_recife_username);
-    driver
-        .findElement(By.cssSelector(PASSWORD_FIELD_CSS_SELECTOR))
-        .sendKeys(conecta_recife_password);
+    driver.findElement(By.id(USERNAME_FIELD_ID)).sendKeys(conectaRecifeUsername);
+    driver.findElement(By.cssSelector(PASSWORD_FIELD_CSS_SELECTOR)).sendKeys(conectaRecifePassword);
   }
 
   private void signIn() {
     driver.findElement(By.cssSelector(SIGN_IN_BUTTON_CSS_SELECTOR)).click();
-    new WebDriverWait(driver, SECONDS.toSeconds(30)).withMessage(WAIT_MESSAGE);
+    new WebDriverWait(driver, SECONDS.toSeconds(10))
+        .withMessage("Página não foi redirecionada para depois do login")
+        .until(
+            ExpectedConditions.textToBePresentInElementLocated(
+                By.cssSelector("blockquote"), WAIT_MESSAGE));
   }
 }

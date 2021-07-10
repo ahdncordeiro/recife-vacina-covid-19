@@ -29,17 +29,18 @@ class ServiceTest {
 
   @Test
   void shouldGoToConectaRecifeLoginPage() throws Exception {
-    var webElement = mock(WebElement.class);
-    when(driver.findElement(By.id("username"))).thenReturn(mock(WebElement.class));
-    when(driver.findElement(By.id("pword"))).thenReturn(mock(WebElement.class));
-    when(driver.findElement(By.name("_eventId_proceed"))).thenReturn(mock(WebElement.class));
+    when(driver.findElement(By.id("cpf"))).thenReturn(mock(WebElement.class));
+    when(driver.findElement(By.cssSelector("input[type='password']")))
+        .thenReturn(mock(WebElement.class));
+    when(driver.findElement(By.cssSelector("button[type='submit']")))
+        .thenReturn(mock(WebElement.class));
 
     invokeMethod(this.service, true, "goToConectaRecifePage");
 
     verify(driver).get("https://minhavacina.recife.pe.gov.br/login");
-    verify(driver).findElement(By.id("username"));
-    verify(driver).findElement(By.id("pword"));
-    verify(driver).findElement(By.name("_eventId_proceed"));
+    verify(driver).findElement(By.id("cpf"));
+    verify(driver).findElement(By.cssSelector("input[type='password']"));
+    verify(driver).findElement(By.cssSelector("button[type='submit']"));
   }
 
   @Test
@@ -57,10 +58,10 @@ class ServiceTest {
               .getMessage()
               .contains("Campos necessários presentes para o sign in não estão visíveis"),
           "Mensagem de erro errada");
-      verify(driver).get("https://go.oreilly.com/acm");
-      verify(driver, atLeastOnce()).findElement(By.id("username"));
-      verify(driver, never()).findElement(By.id("pword"));
-      verify(driver, never()).findElement(By.name("_eventId_proceed"));
+      verify(driver).get("https://minhavacina.recife.pe.gov.br/login");
+      verify(driver, atLeastOnce()).findElement(By.id("cpf"));
+      verify(driver, never()).findElement(By.cssSelector("input[type='password']"));
+      verify(driver, never()).findElement(By.cssSelector("button[type='submit']"));
     }
   }
 
@@ -70,13 +71,14 @@ class ServiceTest {
     var password = "password";
     var usernameWebElement = mock(WebElement.class);
     var passwordWebElement = mock(WebElement.class);
-    when(driver.findElement(By.id("username"))).thenReturn(usernameWebElement);
-    when(driver.findElement(By.id("pword"))).thenReturn(passwordWebElement);
+    when(driver.findElement(By.id("cpf"))).thenReturn(usernameWebElement);
+    when(driver.findElement(By.cssSelector("input[type='password']")))
+        .thenReturn(passwordWebElement);
 
     invokeMethod(new Service(username, password, driver), true, "fillUsernameAndPasswordFields");
 
-    verify(driver).findElement(By.id("username"));
-    verify(driver).findElement(By.id("pword"));
+    verify(driver).findElement(By.id("cpf"));
+    verify(driver).findElement(By.cssSelector("input[type='password']"));
     verify(usernameWebElement).sendKeys(username);
     verify(passwordWebElement).sendKeys(password);
   }
@@ -84,35 +86,42 @@ class ServiceTest {
   @Test
   void shouldSubmitLoginSuccessfully() throws Exception {
     var signInButtonWebElement = mock(WebElement.class);
-    when(driver.findElement(By.name("_eventId_proceed"))).thenReturn(signInButtonWebElement);
-    when(driver.getCurrentUrl()).thenReturn("learning.oreilly.com");
+    var blockquoteWebElement = mock(WebElement.class);
+    when(driver.findElement(By.cssSelector("button[type='submit']")))
+        .thenReturn(signInButtonWebElement);
+    when(driver.findElement(By.cssSelector("blockquote"))).thenReturn(blockquoteWebElement);
+    when(blockquoteWebElement.getText())
+        .thenReturn(
+            "Você se cadastrou com sucesso. No momento, você "
+                + "não faz parte de nenhum dos grupos prioritários definidos pelo Ministério da Saúde.");
 
     invokeMethod(this.service, true, "signIn");
 
-    verify(driver).findElement(By.name("_eventId_proceed"));
+    verify(driver).findElement(By.cssSelector("button[type='submit']"));
     verify(signInButtonWebElement).click();
-    verify(driver, atLeastOnce()).getCurrentUrl();
   }
 
   @Test
   void shouldSubmitLoginFailsAfterTimeout() throws Exception {
     var signInButtonWebElement = mock(WebElement.class);
-    when(driver.findElement(By.name("_eventId_proceed"))).thenReturn(signInButtonWebElement);
+    var blockquoteWebElement = mock(WebElement.class);
+    when(driver.findElement(By.cssSelector("button[type='submit']")))
+        .thenReturn(signInButtonWebElement);
+    when(driver.findElement(By.cssSelector("blockquote"))).thenReturn(blockquoteWebElement);
+    when(blockquoteWebElement.getText()).thenReturn("");
 
     try {
       invokeMethod(this.service, true, "signIn");
       Assertions.fail("Should have thrown an exception");
-
     } catch (InvocationTargetException e) {
       var targetException = e.getTargetException();
-      Assertions.assertEquals(targetException.getClass(), TimeoutException.class);
+      Assertions.assertEquals(TimeoutException.class, targetException.getClass());
       Assertions.assertTrue(
           targetException
               .getMessage()
-              .contains("Página não foi redirecionada para learning o'reilly"),
+              .contains("Página não foi redirecionada para depois do login"),
           "Mensagem de erro errada");
-      verify(driver).findElement(By.name("_eventId_proceed"));
-      verify(driver, atLeastOnce()).getCurrentUrl();
+      verify(driver, atLeastOnce()).findElement(By.cssSelector("blockquote"));
     }
   }
 }
