@@ -42,5 +42,5 @@ jobs:
       - name: Run with Gradle
         run: ./gradlew run -Dwebdriver.gecko.driver=geckodriver
         env:
-          ACM_USERNAME: ${{ secrets.CONECTA_RECIFE_USERNAME }}
-          ACM_PASSWORD: ${{ secrets.CONECTA_RECIFE_PASSWORD }}
+          CONECTA_RECIFE_USERNAME: ${{ secrets.CONECTA_RECIFE_USERNAME }}
+          CONECTA_RECIFE_PASSWORD: ${{ secrets.CONECTA_RECIFE_PASSWORD }}
